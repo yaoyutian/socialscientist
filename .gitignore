@@ -1,0 +1,22 @@
+# 编辑器与操作系统
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# 临时文件（不要提交）
+*.tmp
+*.tmp.md
+~$*
+.DS_Store
+
+# 旧版备份（历史版本请放 archive/ 并在提交信息中说明）
+*.bak
+*.orig
+*.rej
