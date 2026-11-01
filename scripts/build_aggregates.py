@@ -26,6 +26,8 @@ THINKERS = [
     ('bauman', '齐格蒙特·鲍曼'),
     ('habermas', '尤尔根·哈贝马斯'),
     ('said', '爱德华·萨义德'),
+    ('hochschild', '阿丽·霍克希尔德'),
+    ('arendt', '汉娜·阿伦特'),
 ]
 
 AI_FILES = [
