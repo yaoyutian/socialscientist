@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""全库校验。用法：python scripts/verify_all.py"""
+"""全库校验（检查项数以结束时打印的计数为准）。用法：python scripts/verify_all.py"""
 import io
 import os
 import re
@@ -13,7 +13,8 @@ SEC = ['背景与语境', '核心论点', '关键概念详解', '方法论', '�
        '与现有思想家的交叉对照', '当代意义']
 
 DIRS = ['marx', 'weber', 'foucault', 'bourdieu', 'hayek', 'durkheim',
-        'bauman', 'habermas', 'said', 'hochschild', 'arendt']
+        'bauman', 'habermas', 'said', 'hochschild', 'arendt',
+        'schmitt', 'mead', 'goffman', 'butler', 'beauvoir', 'feixiaotong', 'liangshuming']
 AGG = {
     'marx': '卡尔·马克思-主要著作详述.md', 'weber': '马克斯·韦伯-主要著作详述.md',
     'foucault': '米歇尔·福柯-主要著作详述.md', 'bourdieu': '皮埃尔·布尔迪厄-主要著作详述.md',
@@ -21,9 +22,14 @@ AGG = {
     'bauman': '齐格蒙特·鲍曼-主要著作详述.md', 'habermas': '尤尔根·哈贝马斯-主要著作详述.md',
     'said': '爱德华·萨义德-主要著作详述.md', 'hochschild': '阿丽·霍克希尔德-主要著作详述.md',
     'arendt': '汉娜·阿伦特-主要著作详述.md',
+    'schmitt': '卡尔·施米特-主要著作详述.md', 'mead': '乔治·米德-主要著作详述.md',
+    'goffman': '欧文·戈夫曼-主要著作详述.md', 'butler': '朱迪思·巴特勒-主要著作详述.md',
+    'beauvoir': '西蒙娜·德·波伏娃-主要著作详述.md', 'feixiaotong': '费孝通-主要著作详述.md',
+    'liangshuming': '梁漱溟-主要著作详述.md',
 }
 
 fails = []
+NCHECK = 0
 
 
 def read(p):
@@ -31,6 +37,8 @@ def read(p):
 
 
 def check(name, ok, detail=''):
+    global NCHECK
+    NCHECK += 1
     print('%-4s %s %s' % ('OK' if ok else 'FAIL', name, detail))
     if not ok:
         fails.append(name)
@@ -103,6 +111,27 @@ for r, d, fs in os.walk('.'):
                 broken.append('%s -> %s' % (p, m.group(1)))
 check('relative-links', not broken, str(broken[:5]))
 
+# 带 # 锚点的 .md 链接：目标文件存在，且锚点为 id= 或目标文件中真实存在的标题
+badanch = []
+for r, d, fs in os.walk('.'):
+    if '.git' in r or 'archive' in r:
+        continue
+    for f in fs:
+        if not f.endswith('.md'):
+            continue
+        p = os.path.join(r, f)
+        for m in re.finditer(r'\]\(([^)#]+\.md)#([^)]+)\)', read(p)):
+            t = os.path.normpath(os.path.join(r, m.group(1)))
+            anchor = m.group(2)
+            if not os.path.exists(t):
+                badanch.append('%s -> %s#%s' % (p, m.group(1), anchor))
+                continue
+            tgt = read(t)
+            if ('id="%s"' % anchor) not in tgt \
+                    and anchor not in re.findall(r'^#+ (.+)$', tgt, re.M):
+                badanch.append('%s -> %s#%s' % (p, m.group(1), anchor))
+check('anchor-links', not badanch, str(badanch[:5]))
+
 badconf = []
 for d in DIRS:
     for f in os.listdir(d):
@@ -125,6 +154,13 @@ ai = [f for f in sorted(os.listdir('AI预测')) if f.endswith('.md') and f != 'A
 nmark = sum(len(re.findall(r'【[^】]*·[^】]*】', read(os.path.join('AI预测', f)))) for f in ai)
 check('ai-confidence-marks', nmark > 300, '%d marks / %d files' % (nmark, len(ai)))
 
+# AI预测 合并稿与 5 份分稿同步（与顶层合集同口径；置信度规范.md 不参与合并）
+AI_FILES = ['01-主线-历史规律与AI定位.md', '02-人口维度.md', '03-劳动与工作维度.md',
+            '04-组织结构维度.md', '05-知识与合法性维度.md']
+merged = read(os.path.join('AI预测', 'AI预测-完整版.md'))
+missing_ai = [f for f in AI_FILES if read(os.path.join('AI预测', f)).strip() not in merged]
+check('ai-merge-sync', not missing_ai, str(missing_ai))
+
 nci = len(re.findall(r'^- ', read('概念索引.md'), re.M))
 check('concept-index', nci > 600, '%d entries' % nci)
 
@@ -135,5 +171,5 @@ nointro = [d for d in DIRS if not os.path.exists(os.path.join(d, 'intro.md'))]
 check('all-have-intro', not nointro, str(nointro))
 
 print()
-print('%d checks, %d failed' % (11, len(fails)))
+print('%d checks, %d failed' % (NCHECK, len(fails)))
 sys.exit(1 if fails else 0)

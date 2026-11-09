@@ -28,6 +28,13 @@ THINKERS = [
     ('said', '爱德华·萨义德'),
     ('hochschild', '阿丽·霍克希尔德'),
     ('arendt', '汉娜·阿伦特'),
+    ('schmitt', '卡尔·施米特'),
+    ('mead', '乔治·米德'),
+    ('goffman', '欧文·戈夫曼'),
+    ('butler', '朱迪思·巴特勒'),
+    ('beauvoir', '西蒙娜·德·波伏娃'),
+    ('feixiaotong', '费孝通'),
+    ('liangshuming', '梁漱溟'),
 ]
 
 AI_FILES = [
@@ -68,6 +75,10 @@ def build_thinker(directory, zh_name):
 
     # 目录放在标题与导语之后、正文之前：intro 的第 5 行是分隔线 `---`
     lines = intro.split('\n')
+    if len(lines) < 5 or lines[4].strip() != '---':
+        raise SystemExit(
+            '%s/intro.md 第 5 行不是分隔线 `---`：'
+            '目录插入位置的结构假设失效，请先修正 intro 结构' % directory)
     head = '\n'.join(lines[:5])
     rest = '\n'.join(lines[5:]).lstrip('\n')
 

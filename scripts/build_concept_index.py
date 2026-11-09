@@ -34,6 +34,13 @@ THINKERS = [
     ('said', '萨义德'),
     ('hochschild', '霍克希尔德'),
     ('arendt', '阿伦特'),
+    ('schmitt', '施米特'),
+    ('mead', '米德'),
+    ('goffman', '戈夫曼'),
+    ('butler', '巴特勒'),
+    ('beauvoir', '波伏娃'),
+    ('feixiaotong', '费孝通'),
+    ('liangshuming', '梁漱溟'),
 ]
 NAMES = dict(THINKERS)
 
